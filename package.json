@@ -1,0 +1,31 @@
+{
+  "name": "playwright-orangehrm-poc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "_local:clean:allure": "rmdir /s /q allure-results & rmdir /s /q allure-report",
+    "regression": "playwright test",
+    "smoke": "playwright test --grep \"@smoke\"",
+    "allure:generate": "npx allure generate allure-results --clean",
+    "_local:allure:report": "start \"Allure\" cmd /k \"npx http-server allure-report -p 5050\"",
+    "allure:open": "npx allure open allure-report"
+  },
+  "keywords": [
+    "playwright",
+    "qa",
+    "e2e",
+    "ui-testing",
+    "automation-poc"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@faker-js/faker": "^10.4.0",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "allure-playwright": "^3.7.1",
+    "dotenv": "^17.4.2"
+  }
+}
