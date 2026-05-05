@@ -37,7 +37,9 @@ jobs:
      
     # Regression test for QA branch
     - name: Run Regression Tests
-      if: github.event.pull_request.base.ref == 'qa' || github.event_name == 'schedule'
+      if: github.event.pull_request.base.ref == 'qa' 
+          || github.event_name == 'schedule'
+          || github.event_name == 'worklflow_dispatch'
       run: npm run regression
       
     # Smoke test for Main branch
