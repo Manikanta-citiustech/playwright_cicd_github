@@ -98,7 +98,7 @@ jobs:
         with:
           server_address: ${{ secrets.EMAIL_SERVER }}
           server_port: 587
-          secure: true
+          secure: false
 
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
@@ -106,12 +106,12 @@ jobs:
           subject: "Playwright Allure Test Report - ${{ github.workflow }} - ${{ github.run_number }}"
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.EMAIL_FROM }}
-          attachments: allure-report.zip  
+          #attachments: allure-report.zip  
           body: |
                Hi Team, 
                
                Playwright test execution is complete.
-               
+
                Allure Report: 
                https://manikanta-citiustech.github.io/playwright_cicd_github
 
