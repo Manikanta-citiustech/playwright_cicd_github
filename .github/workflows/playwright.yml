@@ -97,8 +97,8 @@ jobs:
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.EMAIL_SERVER }}
-          server_port: ${{ secrets.EMAIL_PORT }}
-          secure: false
+          server_port: 587
+          secure: true
 
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
@@ -110,7 +110,10 @@ jobs:
           body: |
                Hi Team, 
                
-               Please find the attached Allure Test Report for the latest test run.
+               Playwright test execution is complete.
+               
+               Allure Report: 
+               https://manikanta-citiustech.github.io/playwright_cicd_github
 
                 Thanks, 
                 Playwright CICD Bot
