@@ -9,8 +9,7 @@ on:
       - qa
   
   schedule:
-    - cron: '30 10 * * 1-5' 
-      # Runs every day at 10 AM IST (4:30 AM UTC) from Monday to Friday   
+    - cron: '30 4 * * 1-5' 
 
 jobs:
   playwright_test:
@@ -46,7 +45,8 @@ jobs:
       
     # Smoke test for Main branch
     - name: Run Smoke Tests
-      if: github.event.pull_request.base.ref == 'main'
+      if: github.event_name == 'pull_request' && 
+          github.event.pull_request.base.ref == 'main'
       run: npm run smoke
    
     - name: upload Allure Results
@@ -98,7 +98,7 @@ jobs:
         with:
           server_address: ${{ secrets.EMAIL_SERVER }}
           server_port: ${{ secrets.EMAIL_PORT }}
-          secure: true
+          secure: false
 
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
@@ -108,7 +108,12 @@ jobs:
           from: ${{ secrets.EMAIL_FROM }}
           attachments: allure-report.zip  
           body: |
-               Hi Team, "Please find the attached Allure Test Report for the latest test run."
+               Hi Team, 
+               
+               Please find the attached Allure Test Report for the latest test run.
+
+                Thanks, 
+                Playwright CICD Bot
     
           
           
