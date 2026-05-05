@@ -1,6 +1,8 @@
 name: Playwright CICD for Regression Testing in QA and Smoke Testing in Main
 
 on:
+  workflow_dispatch:   # ✅ manual trigger (Run workflow button)
+  
   pull_request:
     branches:
       - main
