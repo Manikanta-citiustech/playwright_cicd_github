@@ -84,7 +84,7 @@ jobs:
               allure generate allure-results \
                 --clean \
                 -o allure-report \
-                --base-path /playwright_cicd_github
+                --base-path /playwright_cicd_github/
 
       - name: Upload Allure HTML Report
         uses: actions/upload-artifact@v4
