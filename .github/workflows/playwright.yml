@@ -1,7 +1,10 @@
 name: Playwright CICD for Regression Testing in QA and Smoke Testing in Main
 
+permissions:
+  contents: write
+
 on:
-  workflow_dispatch:   #manual trigger (Run workflow button)
+  workflow_dispatch:
   
   pull_request:
     branches:
@@ -9,7 +12,7 @@ on:
       - qa
   
   schedule:
-    - cron: '30 4 * * 1-5' 
+    - cron: '30 4 * * 1-5'
 
 jobs:
   playwright_test:
@@ -17,71 +20,71 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Install playwright browsers
-      run: npx playwright install --with-deps
-      #--with-deps ensures: Chromium launches successfully  
-     
-    # Regression test for QA branch
-    - name: Run Regression Tests
-      if: > 
-            github.event_name == 'schedule' ||
-            github.event_name == 'workflow_dispatch' ||
-            ( github.event_name == 'pull_request' && 
-              github.event.pull_request.base.ref == 'qa') 
-      run: npm run regression
-      
-    # Smoke test for Main branch
-    - name: Run Smoke Tests
-      if: github.event_name == 'pull_request' && 
-          github.event.pull_request.base.ref == 'main'
-      run: npm run smoke
-   
-    - name: upload Allure Results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: allure-results
-        path: allure-results/
-        retention-days: 1
-  
-  allure_report:
-    name: Generate Allure Report
-    needs: playwright_test
-    runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      # Regression tests for QA / Scheduled / Manual
+      - name: Run Regression Tests
+        if: >
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'qa')
+        run: npm run regression
+
+      # Smoke tests for Main PR
+      - name: Run Smoke Tests
+        if: github.event_name == 'pull_request' &&
+            github.event.pull_request.base.ref == 'main'
+        run: npm run smoke
+
+      - name: Upload Allure Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results/
+          retention-days: 1
+
+  allure_report:
+    name: Generate Allure Report
+    needs: playwright_test
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Download Allure Results
         uses: actions/download-artifact@v4
         with:
           name: allure-results
-          path: allure-results/ 
+          path: allure-results/
 
-      - name: setup Java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - name: Install Allure Commandline
         run: npm install -g allure-commandline
 
       - name: Generate Allure Report
-        run: allure generate allure-results --clean -o allure-report
+        #run: allure generate allure-results --clean --single-file -o allure-report
+        run: |
+              allure generate allure-results \
+                --clean \
+                -o allure-report \
+                --relative-links
 
       - name: Upload Allure HTML Report
         uses: actions/upload-artifact@v4
@@ -90,10 +93,27 @@ jobs:
           path: allure-report/
           retention-days: 2
 
-      - name: Generate Zip of Allure Report
-        run: zip -r allure-report.zip allure-report
-      
-      - name: Send Allure Report via Email
+  deploy_allure_report:
+    name: Publish Allure Report & Send Email
+    needs: allure_report
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Allure HTML Report
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+
+      - name: Deploy Allure Report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-report
+          force_orphan: true
+
+      # EMAIL IS SENT **AFTER DEPLOYMENT**
+      - name: Send Allure Report Email
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.EMAIL_SERVER }}
@@ -103,38 +123,19 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
 
-          subject: "Playwright Allure Test Report - ${{ github.workflow }} - ${{ github.run_number }}"
-          to: ${{ secrets.EMAIL_TO }}
+          subject: "Playwright Allure Test Report - ${{ github.workflow }} - Run #${{ github.run_number }}"
+          #to: ${{ secrets.EMAIL_TO }}
+          to: "manikantav@wilcosource.com, radha.julakanti@citiustech.com, hindu.lingampally@citiustech.com"
           from: ${{ secrets.EMAIL_FROM }}
-          #attachments: allure-report.zip  
           body: |
-               Hi Team, 
-               
-               Playwright test execution is complete.
+            Hi Team,
 
-               Allure Report: 
-               https://manikanta-citiustech.github.io/playwright_cicd_github
+            Playwright test execution is complete
 
-                Thanks, 
-                Playwright CICD Bot
+            Allure Report (Latest):
+            https://manikanta-citiustech.github.io/playwright_cicd_github/
 
-  deploy_allure_report:
-    name: Publish Allure Report to GitHub Pages
-    needs: allure_report
-    runs-on: ubuntu-latest
+            Note: Page is published after deployment, no stale content.
 
-    steps:
-    - name: Download Allure HTML Report
-      uses: actions/download-artifact@v4
-      with:
-        name: allure-report
-        path: allure-report
-
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: allure-report
-   
-          
-          
+            Thanks,
+            Playwright CICD Bot
