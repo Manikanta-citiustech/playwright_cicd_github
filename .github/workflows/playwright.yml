@@ -1,5 +1,8 @@
 name: Playwright CICD for Regression Testing in QA and Smoke Testing in Main
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:   #manual trigger (Run workflow button)
   
@@ -63,8 +66,8 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      #- name: Checkout code
+       # uses: actions/checkout@v4
 
       - name: Download Allure Results
         uses: actions/download-artifact@v4
