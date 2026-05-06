@@ -9,8 +9,7 @@ on:
       - qa
   
   schedule:
-    - cron: '30 10 * * 1-5' 
-      # Runs every day at 10 AM IST (4:30 AM UTC) from Monday to Friday   
+    - cron: '30 4 * * 1-5' 
 
 jobs:
   playwright_test:
@@ -46,7 +45,8 @@ jobs:
       
     # Smoke test for Main branch
     - name: Run Smoke Tests
-      if: github.event.pull_request.base.ref == 'main'
+      if: github.event_name == 'pull_request' && 
+          github.event.pull_request.base.ref == 'main'
       run: npm run smoke
    
     - name: upload Allure Results
@@ -89,6 +89,52 @@ jobs:
           name: allure-report
           path: allure-report/
           retention-days: 2
-    
+
+      - name: Generate Zip of Allure Report
+        run: zip -r allure-report.zip allure-report
+      
+      - name: Send Allure Report via Email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.EMAIL_SERVER }}
+          server_port: 587
+          secure: false
+
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+
+          subject: "Playwright Allure Test Report - ${{ github.workflow }} - ${{ github.run_number }}"
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.EMAIL_FROM }}
+          #attachments: allure-report.zip  
+          body: |
+               Hi Team, 
+               
+               Playwright test execution is complete.
+
+               Allure Report: 
+               https://manikanta-citiustech.github.io/playwright_cicd_github
+
+                Thanks, 
+                Playwright CICD Bot
+
+  deploy_allure_report:
+    name: Publish Allure Report to GitHub Pages
+    needs: allure_report
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download Allure HTML Report
+      uses: actions/download-artifact@v4
+      with:
+        name: allure-report
+        path: allure-report
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: allure-report
+   
           
           
