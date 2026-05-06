@@ -124,7 +124,8 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
 
           subject: "Playwright Allure Test Report - ${{ github.workflow }} - Run #${{ github.run_number }}"
-          to: ${{ secrets.EMAIL_TO }}
+          #to: ${{ secrets.EMAIL_TO }}
+          to: "manikantav@wilcosource.com, radha.julakanti@citiustech.com, hindu.lingampally@citiustech.com"
           from: ${{ secrets.EMAIL_FROM }}
           body: |
             Hi Team,
