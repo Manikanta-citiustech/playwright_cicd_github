@@ -10,6 +10,10 @@ on:
     branches:
       - main
       - qa
+    paths-ignore:
+      - 'README.md'
+      #- 'docs/**'
+      #- '.github/workflows/**'  
   
   schedule:
     - cron: '30 4 * * 1-5'
@@ -124,8 +128,8 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
 
           subject: "Playwright Allure Test Report - ${{ github.workflow }} - Run #${{ github.run_number }}"
-          #to: ${{ secrets.EMAIL_TO }}
-          to: "manikantav@wilcosource.com, radha.julakanti@citiustech.com, hindu.lingampally@citiustech.com"
+          to: ${{ secrets.EMAIL_TO }}
+          #to: "manikantav@wilcosource.com, radha.julakanti@citiustech.com, hindu.lingampally@citiustech.com"
           from: ${{ secrets.EMAIL_FROM }}
           body: |
             Hi Team,
