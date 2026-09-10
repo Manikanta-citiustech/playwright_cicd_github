@@ -1,0 +1,10 @@
+ASSERTION ERROR: expect(page).toHaveURL(expected) failed
+
+Expected pattern: /inventory.test/
+Received string:  "https://www.saucedemo.com/inventory.html"
+Timeout: 5000ms
+
+Call log:
+  - Expect "toHaveURL" with timeout 5000ms
+    9 × unexpected value "https://www.saucedemo.com/inventory.html"
+
